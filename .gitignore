@@ -1,2 +1,22 @@
-
+# Local ZMK/Zephyr workspaces and build output
 .zmk/
+.west/
+build/
+zephyr/
+
+# Generated firmware artifacts
+*.uf2
+*.hex
+*.bin
+
+# Operating-system metadata
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Editor and temporary files
+*.swp
+*.swo
+*~
+*.tmp
+*.temp

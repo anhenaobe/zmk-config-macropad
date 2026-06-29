@@ -1,0 +1,13 @@
+Item,Component,Quantity,Description,Status,Notes
+1,nice!nano v2,1,nRF52840 wireless controller module,Not acquired,Confirm authentic board and current pinout before wiring
+2,MX mechanical switches,12,MX-compatible switches for the 3x4 matrix,Planned,Final switch type to be selected
+3,1N4148 diodes,12,Signal diodes for per-key matrix isolation,Planned,Confirm orientation against the shield matrix definition
+4,MX keycaps,12,Keycaps compatible with the selected MX switches,Planned,Choose legends after keymap validation
+5,Pin headers or sockets,2 rows,Removable electrical connection for the controller,Planned,Quantity and height depend on selected socket system
+6,LiPo battery 3.7V,1,Single-cell battery for wireless operation,Planned,Confirm connector polarity size capacity and controller compatibility
+7,Power switch,1,Inline power control for battery operation,Planned,Select footprint and current rating during schematic design
+8,Custom PCB,1,Macropad PCB designed in Altium Designer,Pending design,Prototype manually before PCB release
+9,USB-C data cable,1,Data-capable cable for power bootloader access and flashing,Required,Charge-only cables are not suitable
+10,Dupont wires,1 set,Insulated jumpers for matrix and bring-up tests,Required,Use controlled connections to avoid accidental shorts
+11,Breadboard or prototyping board,1,Temporary platform for manual hardware validation,Required,Select a format compatible with the controller headers
+
