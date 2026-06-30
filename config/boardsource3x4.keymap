@@ -12,15 +12,15 @@
     keymap {
         compatible = "zmk,keymap";
 
-        default_layer {
-            display-name = "Test";
+	default_layer {
+    	    display-name = "FPS";
 
-            bindings = <
-                &kp ESC   &kp N1       &kp N2    &kp N3
-                &kp TAB   &kp Q        &kp W     &kp E
-                &mo 1     &kp A        &kp S     &kp ENTER
-            >;
-        };
+    	    bindings = <
+                &kp N1    &kp N2     &kp N3     &kp N4
+        	&kp Q     &kp W      &kp E      &kp R
+        	&kp A     &kp S      &kp D      &kp SPACE
+    		>;
+	};
 
         config_layer {
             display-name = "Config";
