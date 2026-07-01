@@ -1,74 +1,71 @@
-# Testing Plan
+# 3x4 Macropad Testing Plan
 
-Statuses use **Passed**, **Failed**, **Blocked**, or **Not started**. A test should move to **Passed** only when its expected result has been observed and the evidence has been recorded in `docs/development_log.md`.
+## Objective and validation status
 
-## 1. Firmware build test
+This plan validates the **3x4 proof of concept** using the ZMK firmware generated for `nice_nano//zmk@2` and the `boardsource3x4` shield. Hardware validation was completed successfully with a Pro Micro nRF52840 that is pin-compatible with the nice!nano v2.
 
-- **Objective:** Confirm that the committed ZMK configuration compiles for the board and shield declared in `build.yaml`.
-- **Procedure:** Run the **Build ZMK firmware** GitHub Actions workflow and inspect the reusable ZMK build job for errors or warnings that require action.
-- **Expected result:** The workflow completes successfully and proceeds to artifact packaging for the configured target.
-- **Status:** Passed — the current configuration has built successfully in GitHub Actions.
+The generated UF2 firmware artifact was flashed to the controller, the Bluetooth device appeared as `boardsource3x4`, and BLE pairing completed successfully. All twelve single-key matrix coordinates produced the expected FPS key output in Notepad when tested with a diode between the corresponding column and row pins.
 
-## 2. Firmware artifact download test
+The current scope remains limited to the existing 3x4 matrix. It does not include changing the layout, creating a custom 4x5 or Valorant shield, or validating a final PCB.
 
-- **Objective:** Confirm that the generated firmware can be retrieved from a completed CI run.
-- **Procedure:** Open a successful workflow run, download its artifact ZIP, extract it, and verify that it contains the expected `.uf2` firmware file.
-- **Expected result:** The ZIP downloads without corruption and exposes a UF2 file for the configured target.
-- **Status:** Passed — a firmware ZIP has been downloaded successfully.
+## Validation setup
 
-## 3. Bootloader flashing test
+The validation used:
 
-- **Objective:** Verify that the nice!nano v2 accepts and starts the generated firmware.
-- **Procedure:** Connect the controller with a data-capable USB cable, enter the UF2 bootloader, copy the target `.uf2` file to the bootloader drive, and observe the reboot.
-- **Expected result:** The file transfer completes, the bootloader drive disconnects, and the controller restarts without returning immediately to the bootloader.
-- **Status:** Blocked — nice!nano v2 not yet available.
+- Pro Micro nRF52840, confirmed pin-compatible with the nice!nano v2;
+- USB-C data cable;
+- generated `.uf2` firmware artifact for the configured target;
+- one diode and jumper wires for manual matrix bridging;
+- Bluetooth-capable host;
+- Notepad for observing the received key output.
 
-## 4. BLE pairing test
+## Bring-up results
 
-- **Objective:** Verify Bluetooth advertising, pairing, reconnection, and HID transport.
-- **Procedure:** Flash the firmware, select a clean Bluetooth profile if needed, pair from the host, press representative keys, power-cycle the controller, and verify reconnection.
-- **Expected result:** The host pairs successfully, receives the intended HID events, and reconnects after a power cycle.
-- **Status:** Blocked — controller hardware and flashing are pending.
+| Test | Procedure | Acceptance criterion | Result |
+|---|---|---|---|
+| UF2 flashing | Enter the controller bootloader and copy the generated `.uf2` file. | The file transfer completes and the controller starts the firmware. | OK |
+| BLE advertising | Scan for the controller from the host. | A Bluetooth device named `boardsource3x4` appears. | OK |
+| BLE pairing | Pair the `boardsource3x4` device with the host. | Pairing completes and the controller exposes HID keyboard input. | OK |
+| 3x4 single-key matrix | Perform all twelve diode-assisted bridges listed below. | Each coordinate produces its expected key in Notepad. | OK |
+| Multi-key rollover | Press or bridge multiple matrix positions simultaneously. | Every simultaneous keypress is reported correctly without ghosting or masking. | Pending |
 
-## 5. Matrix short test using wires
+BLE reconnection after a controller or host power cycle was not part of the recorded validation and remains pending.
 
-- **Objective:** Validate each logical matrix position before installing all switches or designing the PCB.
-- **Procedure:** With the powered controller secured against accidental shorts, momentarily bridge only the documented row and column pair for each position using insulated jumper wires. Record the host-visible output for all twelve positions.
-- **Expected result:** Every row/column pair produces exactly the binding assigned to its keymap position, with no adjacent or repeated phantom events.
-- **Status:** Blocked — controller and manual matrix wiring are pending.
+## Diode orientation
 
-## 6. Keymap validation test
+The manual matrix test used a diode in the shield's configured `col2row` direction:
 
-- **Objective:** Verify that every binding in the default layer matches the intended action.
-- **Procedure:** Exercise all twelve physical or wire-simulated positions and compare host-visible output with `config/boardsource3x4.keymap`, including media keys and arrow keys.
-- **Expected result:** Every position produces its documented key or consumer-control action exactly once per actuation.
-- **Status:** Blocked — matrix hardware is pending.
+- column side to diode anode;
+- row side to diode cathode;
+- diode stripe, which marks the cathode, toward `ROW`.
 
-## 7. Layer test
+Only one diode was available, so each coordinate was tested individually. The results establish correct single-key matrix scanning and keymap position mapping, but they do not establish multi-key rollover behavior.
 
-- **Objective:** Verify toggle, momentary, and layer-tap behavior across all configured layers.
-- **Procedure:** Exercise the layer controls and then test every reachable position on the number, lower, and raise layers. Verify return to the default layer after momentary controls are released.
-- **Expected result:** Each layer activates by its configured behavior, exposes the expected bindings, and returns or toggles predictably without trapping the device on an unintended layer.
-- **Status:** Blocked — matrix hardware is pending.
+## Single-key matrix results
 
-## 8. USB powered test
+With the firmware running and BLE connected, each specified column and row pair was connected through the correctly oriented diode. One coordinate was tested at a time, and the output was observed in Notepad.
 
-- **Objective:** Verify stable startup and operation while powered from USB.
-- **Procedure:** Connect the flashed controller through a known-good USB data cable, repeat several cold starts and resets, and exercise representative keys over BLE.
-- **Expected result:** The controller starts consistently, remains connected, and processes keys without resets or intermittent behavior.
-- **Status:** Blocked — controller hardware and flashing are pending.
+| Key | Coordinate | Physical bridge | Expected output | Result |
+|---|---|---|---|---|
+| K1 | RC(0,0) | P1.15 ↔ P0.09 | 1 | OK |
+| K2 | RC(0,1) | P1.15 ↔ P0.10 | 2 | OK |
+| K3 | RC(0,2) | P1.15 ↔ P1.11 | 3 | OK |
+| K4 | RC(0,3) | P1.15 ↔ P1.13 | 4 | OK |
+| K5 | RC(1,0) | P0.02 ↔ P0.09 | Q | OK |
+| K6 | RC(1,1) | P0.02 ↔ P0.10 | W | OK |
+| K7 | RC(1,2) | P0.02 ↔ P1.11 | E | OK |
+| K8 | RC(1,3) | P0.02 ↔ P1.13 | R | OK |
+| K9 | RC(2,0) | P0.29 ↔ P0.09 | A | OK |
+| K10 | RC(2,1) | P0.29 ↔ P0.10 | S | OK |
+| K11 | RC(2,2) | P0.29 ↔ P1.11 | D | OK |
+| K12 | RC(2,3) | P0.29 ↔ P1.13 | SPACE | OK |
 
-## 9. Battery powered test
+## Validation conclusion
 
-- **Objective:** Verify safe and stable operation from the intended 3.7 V LiPo battery and power switch.
-- **Procedure:** After confirming battery polarity and connector compatibility, connect the battery with USB disconnected, switch the device on, pair it, and exercise the full matrix.
-- **Expected result:** The controller starts and operates reliably from battery power with no unexpected heating, resets, or disconnects.
-- **Status:** Blocked — controller, battery integration, and flashing are pending.
+The 3x4 proof of concept has been successfully validated on real hardware. The Pro Micro nRF52840 accepted the nice!nano v2-compatible ZMK firmware, advertised and paired over BLE as `boardsource3x4`, and resolved every single-key `ROW/COL` coordinate to the expected FPS key.
 
-## 10. Sleep and power behavior test
+The remaining matrix-specific test is simultaneous keypress and multi-key rollover validation using enough diodes to connect multiple positions at the same time. This must be completed before drawing conclusions about rollover, ghosting, or masking under gaming input combinations.
 
-- **Objective:** Verify idle, sleep, wake, and reconnect behavior and collect power evidence when measurement equipment is available.
-- **Procedure:** Pair the battery-powered device, leave it idle through the configured power-management intervals, observe connection state and current if possible, then press a key to wake it.
-- **Expected result:** The device enters the expected low-power state, wakes from a key event, reconnects when required, and resumes correct HID input without a manual reset.
-- **Status:** Blocked — complete battery-powered hardware is pending.
+## Evidence record
 
+The observed hardware results are recorded in `docs/development_log.md`. Future testing should record the firmware artifact, host, test date, simultaneous key combinations, observed output, and any ghosting or masking behavior.
